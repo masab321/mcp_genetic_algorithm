@@ -1,0 +1,125 @@
+1.Genetic Algorithm with elitism:
+G = vector<vector<bool>>(N, vector<bool>(N, 0));
+file_name = brock_200;
+N = 100 //number of vertices;
+vertices = vector<int>(N);
+pop_size = 50;
+Generations = 1000;
+elite_n = 5;
+population = vector<vector<int>>(popsize, vector<int>(N));
+
+for i = 0 to pop_size:
+    population[i] = generate random permuatation from vertices. must not match with populations[j] where 0 <= j < i;
+    expand_clique(population[i]);
+
+max_clique = vector<int>;
+max_size = 0;
+
+for each generations:
+    for each individual Pi in P:
+        clq, clq_size = assess_fitness(population);
+        if clq_size > best:
+            max_clique = clq;
+            max_size = clq_size;
+
+    childrens = vector<vector<int>>;
+    childrens = first elite_n parents;
+
+    for pop_size/2 times:
+        parent_a = select_with_replacement(population);
+        parent_b = select_with_replacement(population);
+
+        child_a, child_b = crossover(copy(child_a), copy(child_b));
+        mutate(child_a);
+        expand_clique(child_a);
+        mutate(child_b);
+        expand_clique(child_b);
+
+        childrens.push_back(child_a);
+        childrens.push_back(child_b);
+
+    population = childrens;
+return max_clique, max_size
+
+
+2. select_with_replacement:
+t = tournament size; //t=2
+best_index = random number between 0 and pop_size;
+best_fitness = assess_fitness(population[best_index]);
+for i from 2 to t:
+    next_index = random number between 0 and pop_size;
+    next_fitness = assess_fitness(population[next_index]);
+    if (next_fitness > best_fitness):
+        best_index = next_index;
+        best_fitness = next_fitness;
+return best_index;
+
+
+3. assess_fitness(&chromosome):
+clq_size = 0;
+for i = 1; i < N: 
+    bool all_connected = 1;
+    for j = 0; j < i:
+        if (G[chromosome[i]][chromosome[j]] == false):
+            all_connected = false;
+            break;
+    if (all_connected) clq_size = i;
+
+return clq_size + 1;
+
+
+4. expand_clique(&vertices):
+restart_number = 5;
+start_point = 0;
+best_clique = vector<int>;
+repeat:
+    current_clique = vector<int>
+    current_clique.push_back(vertices[start_point]);
+    for i = start_point + 1 to vertices.size() - 1:
+        if vertices[i] is connected with all vertices of current_clique:
+            current_clique.push_back(vertices[i]);
+    for i = start_point - 1 to 0:
+        if vertices[i] is connected with all vertices of current_clique:
+            current_clique.push_back(vertices[i]);
+    if current_clique.size() > best_clique.size():
+        best_clique = current_clique;
+    start_point = random number between 0 to N - 1
+    restart_number = restart_number - 1;
+until restart_number > 0;
+vertices = put the best_clique vertices at the begining and then put the rest.
+
+
+5. crossover(parent_a, parent_b):  //Partially Mapped Crossover (PMX)
+crossover_length = random number between 1 and N/2;
+crossover_start_point = random number between 0 to N - 1;
+mapping_a = vector<int>(N, -1);
+mapping_b = vector<int>(N, - 1);
+child_a = vector<int>(N, -1);
+child_b = vector<int>(N, -1);
+for i = start_point; i < crossover_start_point + crossover_length:
+    index = i % N;
+    mapping_a[parent_b[index]] = parent_a[index];
+    mapping_b[parent_a[index]] = parent_b[index];
+    child_a[index] = parent_b[index];
+    child_b[index] = parent_a[index];
+
+for i = 0; i < N:
+    if (child_a[i] == -1):
+        child_a[i] = parent_a[i]
+        if (mapping_a[child_a[i]] != -1):
+            child_a[i] = mapping_a[child_a[i]];
+        
+for i = 0; i < N:
+    if (child_b[i] == -1):
+        child_b[i] = parent_b[i];
+        if (mapping_a[child_b[i]] != -1):
+            child_b[i] = mapping_b[child_b[i]];
+return child_a, child_b;
+
+
+6. mutation(&chromosome):
+number_of_swap = N/3;
+for i = 0; i < N/3:
+    index_a = random_number between 0 and N - 1;
+    index_b = random_number between 0 and N - 1;
+    swap(chromosome[index_a], chromosome[index_b]);
