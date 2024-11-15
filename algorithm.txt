@@ -1,0 +1,109 @@
+Agorithm: Genetic Algorithm
+N = Number of vertices in the graph
+G = Adjacency matrix representation of Graph
+vertices = Vertices in the Graph
+pop_size = population size
+population = [pop_size][N]
+generations = 200
+
+max_clique = {};
+max_size = 0;
+
+for i from 0 to pop_size :
+    population[i] = random permutation of vertices
+    expand_clique(population[i])
+
+max_clique_repeated = 0;
+prev_max = max_size;
+new_population = {}{}
+
+for gen from 0 to generations :
+    if prev_max == max_size :
+        max_clique_repeated++
+        if max_clique_repeated == regen_population_limit :
+            max_clique_repeated = 0
+            for i from 0 to pop_size :
+                population[i] = random permutation of vertices
+                expand_clique(population[i])
+    else: 
+        max_clique_repeated = 0
+        prev_max = max_size
+
+    clear new_population
+    repeat:
+        parent_a = select_with_replacement(population) // tournament selection
+        paretn_b = select_with_replacement(population) // tournament selection
+        child_a, child_b = crossover(parent_a, parent_b)
+        mutate(child_a);
+        mutate(child_b);
+        expand_clique(child_a);
+        expand_clique(child_b);
+        new_population.push_back(child_a);   
+        if new_population.size() < pop_size :
+            new_population.push_back(child_b)
+        population = new_population
+    until new_population size is less than pop_size
+return max_clique
+
+
+
+Procedure: expand_clique(chromosome)
+restart_number = 100;
+start_point = 0;
+best_clique = {};
+repeat:
+    current_clique = {}
+    current_clique.push_back(chromosome[start_point])
+    for i = start_point + 1 to N :
+        if chromosome[i] is connected with all vertices of current_clique:
+            current_clique.push_back(chromosome[i])
+    for i = 0 to start_point - 1 :
+        if chromosome[i] is connected with all vertices of current_clique:
+            current_clique.push_back(chromosome[i])
+    if current_clique.size() > best_clique.size() :
+        best_clique = current_clique
+    start_point = random number between 0 to N - 1
+    restart_number = restart_number - 1
+until restart_number > 0
+chromosome = best_clique vertices at the begining and then the rest.
+retrun chromosome
+
+
+
+Procedure: mutation(chromosome):
+number_of_swap = 2
+clq_size = assess_fitness(chromosome)
+for i from 0 to number_of_swap :
+    index_a = random_number between 0 and clq_size
+    index_b = random_number between clq_size and N - 1; // if clq_size < N
+    swap(chromosome[index_a], chromosome[index_b])
+return chromosome
+
+
+
+Procedure: crossover(parent_a, parent_b)  //Partially Mapped Crossover (PMX)
+crossover_length = random number between N/5 and N/2
+crossover_start_point = random number between 0 to N - 1
+mapping_a = {}
+mapping_b = {}
+child_a = {}
+child_b = {}
+for i from start_point to crossover_start_point + crossover_length:
+    index = i % N
+    mapping_a[parent_b[index]] = parent_a[index]
+    mapping_b[parent_a[index]] = parent_b[index]
+    child_a[index] = parent_b[index]
+    child_b[index] = parent_a[index]
+
+for i from 0 to N:
+    if (child_a[i] == -1):
+        child_a[i] = parent_a[i]
+        while (mapping_a[child_a[i]] != -1) :
+            child_a[i] = mapping_a[child_a[i]]
+        
+for i from 0 to N:
+    if (child_b[i] == -1):
+        child_b[i] = parent_b[i];
+        while (mapping_a[child_b[i]] != -1) :
+            child_b[i] = mapping_b[child_b[i]];
+return child_a, child_b

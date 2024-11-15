@@ -1,4 +1,3 @@
-1.Genetic Algorithm with elitism:
 G = vector<vector<bool>>(N, vector<bool>(N, 0));
 file_name = brock_200;
 N = 100 //number of vertices;
@@ -8,6 +7,7 @@ Generations = 1000;
 elite_n = 5;
 population = vector<vector<int>>(popsize, vector<int>(N));
 
+1.Genetic Algorithm with elitism:
 for i = 0 to pop_size:
     population[i] = generate random permuatation from vertices. must not match with populations[j] where 0 <= j < i;
     expand_clique(population[i]);
