@@ -17,8 +17,7 @@ The main idea of this algorithms is: If we can somehow find a perfect order of v
 7. If the max clique is repeated for a number of generation regenerate the population
 
 
-#ToDo:
-
+ToDo:
 1. Refactor codes
 2. Duplicates:
   a. Remove duplicates from the population.
