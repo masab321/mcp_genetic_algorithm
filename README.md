@@ -4,7 +4,7 @@ Implementation of a parallel genetic algorithm for the maximum clique problem in
 
 The problem is NP-hard, meaning that no polynomial-time algorithm is known to solve it for all graphs, and the computational complexity increases rapidly with the size of the graph.
 
-The main idea of this algorithms is: If we can somehow find a perfect order of vertices than any greedy algorithm can solve the problem in linear time. So my genetic algorithm is implemented as follows:
+The main idea of this algorithms is: If we can find a perfect order of vertices than any greedy algorithm can solve the problem in linear time. So, the genetic algorithm is implemented as follows:
 
 1. Initialization (Population Generation): Population of randomly generated permutation of vertices
 2. Selection: Tournament Selection
@@ -16,19 +16,7 @@ The main idea of this algorithms is: If we can somehow find a perfect order of v
 6. Fitness: From begining of chromosome greedily search for a clique
 7. If the max clique is repeated for a number of generation regenerate the population
 
-
-ToDo:
-1. Refactor codes
-2. Duplicates:
-   1. Remove duplicates from the population.
-   2. Fill rest of the population using randomly generated permutations
-   3. Call expand_clique for newly added entries.
-3. Optimize the expand_clique function
-4. Experiment with heuristic approaches for the expand_clique function's clique search.
-5. Improve the runtime and result for the dense and large graphs.
-
-
-This table lists the best-known maximum clique sizes and the maximum clique sizes found by the Genetic Algorithm for DIMACS benchmark instances. For each instance, the maximum allotted run time is 1 hour.
+**Table:** This table lists the best-known maximum clique size and the maximum cliques found by the Genetic Algorithm for DIMACS benchmark instances. For each instance, the maximum allotted run time is 1 hour.
 | Filename               | Number of vertices | Number of edges | Best Known | Found           | Found at generation |
 |------------------------|--------------------|-----------------|------------|-----------------|---------------------|
 | brock200_1.clq         | 200                | 14834           | 21         | 21              |                     |
@@ -97,3 +85,15 @@ This table lists the best-known maximum clique sizes and the maximum clique size
 | sanr200_0.9.clq        | 200                | 17863           | 42         | 42              |                     |
 | sanr400_0.5.clq        | 400                | 39984           | 13         | 13              |                     |
 | sanr400_0.7.clq        | 400                | 55869           | 21         | 21              |                     |
+
+
+
+ToDo:
+1. Refactor codes
+2. Duplicates:
+   1. Remove duplicates from the population.
+   2. Fill rest of the population using randomly generated permutations
+   3. Call expand_clique for newly added entries.
+3. Optimize the expand_clique function
+4. Experiment with heuristic approaches for the expand_clique function's clique search.
+5. Improve the runtime and result for the dense and large graphs.
