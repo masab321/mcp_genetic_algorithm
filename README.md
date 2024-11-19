@@ -1,6 +1,20 @@
+# Parallel Genetic Algorithm for Solving the Maximum Clique Problem with Permutation Encoding
+
+Implementation of a parallel genetic algorithm for the maximum clique problem in C++. A clique in a graph is a subset of vertices such that every pair of distinct vertices in the subset is connected by an edge. The maximum clique is the largest clique in the graph, i.e., the clique that contains the maximum number of vertices.
+
+The problem is NP-hard, meaning that no polynomial-time algorithm is known to solve it for all graphs, and the computational complexity increases rapidly with the size of the graph.
+
+ToDo:
+1. Duplicates:
+  a. Remove duplicates from the population.
+  b. Fill rest of the population using randomly generated permutations
+  c. Call expand_clique for newly added entries.
+2. Optimize the expand_clique function
+3. Experiment with heuristic approaches for the expand_clique function's clique search.
+4. Improve the runtime and result for the dense and large graphs.
+
 
 This table lists the best-known maximum clique sizes and Max clique found by the Genetic Algorithm for DIMACS benchmark instances.
-
 | Filename               | Best Known | GAP             |
 |------------------------|------------|-----------------|
 | brock200_1.clq         | 21         | 21              |
