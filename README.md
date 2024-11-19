@@ -4,18 +4,32 @@ Implementation of a parallel genetic algorithm for the maximum clique problem in
 
 The problem is NP-hard, meaning that no polynomial-time algorithm is known to solve it for all graphs, and the computational complexity increases rapidly with the size of the graph.
 
-ToDo:
-0. Refactor codes
-1. Duplicates:
+The main idea of this algorithms is: If we can somehow find a perfect order of vertices than any greedy algorithm can solve the problem in linear time. So my genetic algorithm is implemented as follows:
+
+1. Initialization (Population Generation): Population of randomly generated permutation of vertices
+2. Selection: Tournament Selection
+3. Crossover: Partially Mapped crossover
+4. Mutation: Randomly selected two indexes and swap them
+5. expand_clique:
+   a. For each index of chromosome -> greedily search for a clique
+   b. put the best clique found at the begining of the chromosome
+6. Fitness: From begining of chromosome greedily search for a clique
+7. If the max clique is repeated for a number of generation regenerate the population
+
+
+#ToDo:
+
+1. Refactor codes
+2. Duplicates:
   a. Remove duplicates from the population.
   b. Fill rest of the population using randomly generated permutations
   c. Call expand_clique for newly added entries.
-2. Optimize the expand_clique function
-3. Experiment with heuristic approaches for the expand_clique function's clique search.
-4. Improve the runtime and result for the dense and large graphs.
+3. Optimize the expand_clique function
+4. Experiment with heuristic approaches for the expand_clique function's clique search.
+5. Improve the runtime and result for the dense and large graphs.
 
 
-This table lists the best-known maximum clique sizes and Max clique found by the Genetic Algorithm for DIMACS benchmark instances.
+This table lists the best-known maximum clique sizes and the maximum clique sizes found by the Genetic Algorithm for DIMACS benchmark instances. For each instance, the maximum allotted run time is 1 hour.
 | Filename               | Number of vertices | Number of edges | Best Known | Found           | Found at generation |
 |------------------------|--------------------|-----------------|------------|-----------------|---------------------|
 | brock200_1.clq         | 200                | 14834           | 21         | 21              |                     |
