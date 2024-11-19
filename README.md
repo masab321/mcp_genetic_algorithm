@@ -11,8 +11,8 @@ The main idea of this algorithms is: If we can somehow find a perfect order of v
 3. Crossover: Partially Mapped crossover
 4. Mutation: Randomly selected two indexes and swap them
 5. expand_clique:
-   a. For each index of chromosome -> greedily search for a clique
-   b. put the best clique found at the begining of the chromosome
+   1. For each index of chromosome -> greedily search for a clique
+   2. put the best clique found at the begining of the chromosome
 6. Fitness: From begining of chromosome greedily search for a clique
 7. If the max clique is repeated for a number of generation regenerate the population
 
@@ -20,9 +20,9 @@ The main idea of this algorithms is: If we can somehow find a perfect order of v
 ToDo:
 1. Refactor codes
 2. Duplicates:
-  a. Remove duplicates from the population.
-  b. Fill rest of the population using randomly generated permutations
-  c. Call expand_clique for newly added entries.
+   1. Remove duplicates from the population.
+   2. Fill rest of the population using randomly generated permutations
+   3. Call expand_clique for newly added entries.
 3. Optimize the expand_clique function
 4. Experiment with heuristic approaches for the expand_clique function's clique search.
 5. Improve the runtime and result for the dense and large graphs.
