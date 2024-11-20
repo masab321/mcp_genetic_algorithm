@@ -330,17 +330,29 @@ vector<int> find_clique_for_startpoint(int start_point, const vector<int>& chrom
     vector<int> current_clique;
     unordered_set<int> candidate_vertices(chromosome.begin(), chromosome.end());
 
-    for (int i = start_point; i < chromosome.size() && !candidate_vertices.empty(); i++) {
+    current_clique.push_back(chromosome[start_point]);
+    candidate_vertices.erase(chromosome[start_point]);
+
+    for (auto it = candidate_vertices.begin(); it != candidate_vertices.end(); ) {
+        int v = *it;
+        if (!G[chromosome[start_point]][v]) {
+            it = candidate_vertices.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    
+    for (int i = start_point + 1; i < chromosome.size() && !candidate_vertices.empty(); i++) {
         if (candidate_vertices.find(chromosome[i]) != candidate_vertices.end()) {
             current_clique.push_back(chromosome[i]);
             candidate_vertices.erase(chromosome[i]);
 
             for (auto it = candidate_vertices.begin(); it != candidate_vertices.end(); ) {
                 int v = *it;
-                if (!G[chromosome[i]][v]) {  // If the edge does not exist between chromosome[i] and v
-                    it = candidate_vertices.erase(it);  // Erase the element and update iterator
+                if (!G[chromosome[i]][v]) {
+                    it = candidate_vertices.erase(it);
                 } else {
-                    ++it;  // Only increment iterator if no element was erased
+                    ++it;
                 }
             }
         }
@@ -353,10 +365,10 @@ vector<int> find_clique_for_startpoint(int start_point, const vector<int>& chrom
 
             for (auto it = candidate_vertices.begin(); it != candidate_vertices.end(); ) {
                 int v = *it;
-                if (!G[chromosome[i]][v]) {  // If the edge does not exist between chromosome[i] and v
-                    it = candidate_vertices.erase(it);  // Erase the element and update iterator
+                if (!G[chromosome[i]][v]) {
+                    it = candidate_vertices.erase(it);
                 } else {
-                    ++it;  // Only increment iterator if no element was erased
+                    ++it;
                 }
             }
         }
@@ -369,23 +381,19 @@ vector<int> naive_clique(vector<int>& chromosome) {
     int restart_number = N - 1;
     vector<int> best_clique;
     best_clique.reserve(N);
-    vector<future<vector<int>>> futures;  // To store future results
+    vector<future<vector<int>>> futures;
 
-    // Launch a thread for each position in the chromosome
     for (int pos = 0; pos < N; pos++) {
         futures.push_back(async(launch::async, find_clique_for_startpoint, pos, cref(chromosome)));
     }
 
-    // Collect results from all threads
     for (auto& fut : futures) {
-        vector<int> current_clique = fut.get();  // Get the result from the thread
+        vector<int> current_clique = fut.get();
 
-        // Update the best clique
         if (current_clique.size() > best_clique.size()) {
             best_clique = current_clique;
         }
 
-        // Update max_clique and max_size
         lock_guard<mutex> lock(mtx);
         if (best_clique.size() > max_clique.size()) {
             max_size = best_clique.size();
@@ -395,61 +403,4 @@ vector<int> naive_clique(vector<int>& chromosome) {
 
     return best_clique;
 }
-
-void complete_search(vector<int> candidate_vertices, vector<int> clique, vector<int>& best_clique, int& recursion) {
-    ++recursion;
-    if (candidate_vertices.size() + clique.size() <= best_clique.size())
-        return;
-    
-    if (candidate_vertices.empty() or recursion > max_recursion) {
-        // cout << recursion << ": ";  for (int i: clique) cout << i << ", "; cout << "=> " << clique.size() << endl;
-        if (clique.size() > best_clique.size()) {
-            best_clique = clique;
-            
-        }
-        return;
-    }
-    for (int i = 0; i < candidate_vertices.size(); i++) {
-        int u = candidate_vertices[i];
-        vector<int> new_candidate_vertices; new_candidate_vertices.reserve(N);
-        if (random_number(1, 10) < 5) {
-            clique.push_back(u);
-            for (int j = i + 1; j < candidate_vertices.size(); j++) if (G[u][candidate_vertices[j]]) {
-                new_candidate_vertices.push_back(candidate_vertices[j]);
-            } 
-            complete_search(new_candidate_vertices, clique, best_clique, recursion);
-        
-            clique.pop_back();
-            new_candidate_vertices.clear();
-        }
-        for (int j = i + 1; j < candidate_vertices.size(); j++) 
-            new_candidate_vertices.push_back(candidate_vertices[j]);
-        complete_search(new_candidate_vertices, clique, best_clique, recursion);
-    }
-}
-vector<int> complete_search_driver(const vector<int>& chromosome) {
-    max_recursion = N * 5;
-    int rotation = 10;
-    vector<int> rot_best_clique; rot_best_clique.reserve(N);
-    while (rotation--) {    
-        int recursion = 0;
-        vector<int> candidate_vertices; candidate_vertices.reserve(N);
-        int start_point = random_number(0, N - 1);
-        for (int i = 0; i < N; i++) {
-            candidate_vertices.push_back(chromosome[(start_point + i) % N]);
-        }
-        vector<int> clique; clique.reserve(N);
-        vector<int> best_clique; best_clique.reserve(N);
-        complete_search(candidate_vertices, clique, best_clique, recursion);
-        if (best_clique.size() > rot_best_clique.size()) {
-            rot_best_clique = best_clique;
-        }
-    }
-    if (rot_best_clique.size() > max_size) {
-        max_size = rot_best_clique.size();
-        max_clique = rot_best_clique;
-    }
-    return rot_best_clique;
-}
-
 
