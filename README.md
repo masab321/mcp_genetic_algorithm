@@ -1,21 +1,19 @@
 # Parallel Genetic Algorithm for Solving the Maximum Clique Problem with Permutation Encoding
 
-Implementation of a parallel genetic algorithm for the maximum clique problem in C++. A clique in a graph is a subset of vertices such that every pair of distinct vertices in the subset is connected by an edge. The maximum clique is the largest clique in the graph, i.e., the clique that contains the maximum number of vertices.
+Implementation of a parallel genetic algorithm for the maximum clique problem in C++. A clique in a graph is a subset of vertices such that every pair of distinct vertices in the subset is connected by an edge. The maximum clique is the largest clique in the graph, i.e., the clique that contains the maximum number of vertices.The problem is NP-hard, and the computational complexity increases rapidly with the size of the graph.
 
-The problem is NP-hard, meaning that no polynomial-time algorithm is known to solve it for all graphs, and the computational complexity increases rapidly with the size of the graph.
-
-The main idea of this algorithm: If we can find a perfect order of vertices than a greedy algorithm can solve the MCP in linear time. So, the genetic algorithm is implemented as follows:
-
+The key idea: "If we can find an optimal order of vertices than a greedy algorithm can solve the MCP in linear time". So, the genetic algorithm is implemented as follows:
+<pre>
 1. Initialization (Population Generation): Population of randomly generated permutation of vertices
 2. Selection: Tournament Selection
-3. Crossover: Partially Mapped crossover
-4. Mutation: Randomly selected two indexes and swap them
+3. Crossover: Two Point Crossover (Partially Mapped crossover)
+4. Mutation: Randomly select two indices and swap them
 5. expand_clique:
    1. For each index of chromosome greedily search for a clique
    2. put the best clique found at the begining of the chromosome
-6. Fitness: From begining of chromosome greedily search for a clique
-7. If the max clique is repeated for a number of generation regenerate the population
-<br>
+6. Fitness: From the begining of an individual greedily search for a clique
+7. If the max clique is repeated for a certain number of generations, then regenerate the population (step 1).
+</pre><br>
 <b>Usage:</b>
 <pre>
 - Compile the code using g++
@@ -25,7 +23,7 @@ The main idea of this algorithm: If we can find a perfect order of vertices than
 - e.g. (Build and Run) <b>g++ gae.cpp -o gae && ./gae brock400_1.clq</b>
 </pre><br>
 
-**Table:** This table lists the best-known maximum clique size and the maximum cliques found by the Genetic Algorithm for DIMACS benchmark instances. For each instance, the maximum allotted run time is 1 hour.
+**Table:** This table lists the number of vertices, number of edges, best-known clique size, and maximum clique for some DIMACS benchmark datasets of the Maximum Clique Problem (MCP) found by the Genetic Algorithm. The maximum allotted runtime for each instance is 1 hour.
 | Filename               | Number of vertices | Number of edges | Best Known | Found           | Found at Gen.       |
 |------------------------|--------------------|-----------------|------------|-----------------|---------------------|
 | brock200_1.clq         | 200                | 14834           | 21         | 21              | 4                   |
