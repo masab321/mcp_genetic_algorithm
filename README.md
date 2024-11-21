@@ -1,18 +1,19 @@
 # Parallel Genetic Algorithm for Solving the Maximum Clique Problem with Permutation Encoding
 
-Implementation of a parallel genetic algorithm for the maximum clique problem in C++. A clique in a graph is a subset of vertices in which each pair of vertices is connected by an edge. The maximum clique is the largest clique that contains the maximum number of vertices.The problem is NP-hard, and the computational complexity increases rapidly with the size of the graph.
+Implementation of a parallel genetic algorithm for the maximum clique problem in C++. A clique in a graph is a subset of vertices in which each pair of vertices is connected by an edge. The maximum clique is the clique that contains the maximum number of vertices.The problem is NP-hard, and the computational complexity increases rapidly with the size of the graph.
 
 <b>The key idea:</b> <pre>_"With an optimal order of vertices, a greedy algorithm can solve the MCP in linear time"_</pre> The genetic algorithm is implemented as follows:
 <pre>
 1. Initialization: Population of randomly generated permutation of vertices
 2. Selection: Tournament Selection
-3. Crossover: Two Point Crossover (Partially Mapped crossover)
+3. Crossover: Two Point Crossover (Partially Mapped Crossover)
 4. Mutation: Randomly select two indices and swap them
 5. expand_clique:
-   - For each index of individual greedily search for a clique
+   - For each index of individual (parallelly calculated) greedily search for a clique
    - Put the best clique found at the begining of individual
+   - Update the global maximum clique if current best > global maximum.
 6. Fitness: From the begining of an individual greedily search for a clique
-7. If the max clique is repeated for a certain number of generations, then regenerate the population.
+7. If the max clique is repeated for a certain number of generations, then regenerate the population (step 1).
 </pre><br>
 <b>Usage:</b>
 <pre>
@@ -23,8 +24,8 @@ Implementation of a parallel genetic algorithm for the maximum clique problem in
 - e.g. (Build and Run) <b>g++ gae.cpp -o gae && ./gae brock400_1.clq</b>
 </pre><br>
 
-**Table:** This table lists the number of vertices, number of edges, best-known clique size, and maximum clique for some DIMACS benchmark datasets of the Maximum Clique Problem (MCP) found by the Genetic Algorithm. The maximum allotted runtime for each instance is 1 hour.
-| Instance           | Vertices           | Edges           | Best Known | Best Found      | Found at<br> Generation|
+**Table:** Results of some DIMACS instances solved by the genetic algorithm. The maximum allotted runtime for each instance is 1 hour.
+| Instance           | Vertices           | Edges           | Best Known | Found           | Found at<br> Generation|
 |--------------------|--------------------|-----------------|------------|-----------------|---------------------|
 | brock200_1         | 200                | 14834           | 21         | 21              | 4                   |
 | brock200_2         | 200                | 9876            | 12         | 12              | 1                   |
