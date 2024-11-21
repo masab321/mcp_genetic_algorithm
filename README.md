@@ -18,10 +18,10 @@ Implementation of a parallel genetic algorithm for the maximum clique problem in
 <b>Usage:</b>
 <pre>
 - Compile the code using g++
-- e.g. <b>g++ gae.cpp</b>
+example: <b>$ g++ gae.cpp</b>
 - Run <b>./a.out filename generations</b>
-- e.g. <b>./a.out brock200_1.clq</b>
-- e.g. (Build and Run) <b>g++ gae.cpp -o gae && ./gae brock400_1.clq</b>
+example: <b>$ ./a.out brock200_1.clq</b>
+example (Compile and Run): <b>$ g++ gae.cpp -o gae && ./gae brock400_1.clq</b>
 </pre><br>
 
 **Table:** Results of some DIMACS instances solved by the genetic algorithm. The maximum allotted runtime for each instance is 1 hour.
