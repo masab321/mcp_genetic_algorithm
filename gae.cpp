@@ -17,7 +17,7 @@ using namespace std;
 mutex mtx; 
 
 // knobs
-int pop_size = 76;
+int pop_size = 50;
 int regen_population_limit = 20;
 int generations = 200;
 int naive_restart_number = 399;
@@ -167,7 +167,6 @@ void run_genetic_algorithm() {
     vector<vector<int>> new_population; new_population.reserve(N);
     for (int i = 0; i < pop_size; i++) {
         population[i] = random_permutation(N);
-        expand_clique(population[i]);
     }
     int max_clique_repeated = 0;
     int prev_max = max_size;
@@ -188,8 +187,13 @@ void run_genetic_algorithm() {
         }
 
         // Fitness Assessment
+        vector<thread> threads;
         for (int i = 0; i < pop_size; i++) {
-            expand_clique(population[i]);
+            threads.emplace_back(expand_clique, ref(population[i]));
+            // expand_clique(population[i])
+        }
+        for (auto &th: threads) {
+            th.join();
         }
         update_max();
 
@@ -387,7 +391,6 @@ vector<int> naive_clique(vector<int>& chromosome) {
     int restart_number = N - 1;
     vector<int> best_clique;
     best_clique.reserve(N);
-    vector<future<vector<int>>> futures;
 
     for (int pos = 0; pos < N; pos++) {
         vector<int> current_clique = find_clique_for_startpoint(pos, chromosome);
