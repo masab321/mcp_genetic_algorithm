@@ -177,12 +177,7 @@ void run_genetic_algorithm() {
         int total_fitness = 0;
         for (int pop = 0; pop < pop_size; pop++) total_fitness += assess_fitness(population[pop]);
         cout << "Generation: " << gen << ". Average fitness: " << total_fitness / pop_size << " Max size: " << max_size << ", Max repeated: "<< max_clique_repeated << endl;
-        // print_population_with_fitness(population);
         new_population.clear();
-        // sort(population.begin(), population.end(), fitness_comparator);
-        // for (int i = 0; i < elite_n; i++) {
-        //     new_population.push_back(population[i]);
-        // }
         set<vector<int>> new_pop_set;
 
         for (int pop = 0; pop < population.size() / 2; pop++) {
@@ -197,13 +192,8 @@ void run_genetic_algorithm() {
             if (new_population.size() < pop_size) {
                 new_population.push_back(child_b);
             }
-            // new_pop_set.insert(child_a);
-            // new_pop_set.insert(child_b);
         }
         population = new_population;
-
-        // population.clear();
-        // for (auto vec: new_pop_set) population.push_back(vec);
     }
 }
 
