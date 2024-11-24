@@ -149,6 +149,19 @@ void print_population_with_fitness(const vector<vector<int>>& population) {
     char c; cin >> c;
 }
 
+void update_max() {
+    for (int i = 0; i < pop_size; i++) {
+        int cur_fitness = assess_fitness(population[i]);
+        if (cur_fitness > max_size) {
+            max_size = cur_fitness;
+            max_clique.clear();
+            for (int j = 0; j < max_size; j++) {
+                max_clique.push_back(population[i][j]);
+            }
+        }
+    }
+}
+
 void run_genetic_algorithm() {
     population.resize(pop_size, vector<int>(N));
     vector<vector<int>> new_population; new_population.reserve(N);
@@ -166,7 +179,6 @@ void run_genetic_algorithm() {
                 cout << "Regenerating population" << endl;
                 for (int i = 0; i < pop_size; i++) {
                     population[i] = random_permutation(N);
-                    expand_clique(population[i]);
                 }
                 max_clique_repeated = 0;
             }
@@ -174,20 +186,24 @@ void run_genetic_algorithm() {
             max_clique_repeated = 0;
             prev_max = max_size;
         }
+
+        // Fitness Assessment
+        for (int i = 0; i < pop_size; i++) {
+            expand_clique(population[i]);
+        }
+        update_max();
+
         int total_fitness = 0;
         for (int pop = 0; pop < pop_size; pop++) total_fitness += assess_fitness(population[pop]);
         cout << "Generation: " << gen << ". Average fitness: " << total_fitness / pop_size << " Max size: " << max_size << ", Max repeated: "<< max_clique_repeated << endl;
+        
         new_population.clear();
-        set<vector<int>> new_pop_set;
-
         for (int pop = 0; pop < population.size() / 2; pop++) {
             auto& parent_a = population[select_with_replacement()];
             auto& parent_b = population[select_with_replacement()];
             auto [child_a, child_b] = pmx_crossover(parent_a, parent_b);
             mutate(child_a);
             mutate(child_b);
-            expand_clique(child_a);
-            expand_clique(child_b);
             new_population.push_back(child_a);
             if (new_population.size() < pop_size) {
                 new_population.push_back(child_b);
@@ -374,20 +390,9 @@ vector<int> naive_clique(vector<int>& chromosome) {
     vector<future<vector<int>>> futures;
 
     for (int pos = 0; pos < N; pos++) {
-        futures.push_back(async(launch::async, find_clique_for_startpoint, pos, cref(chromosome)));
-    }
-
-    for (auto& fut : futures) {
-        vector<int> current_clique = fut.get();
-
+        vector<int> current_clique = find_clique_for_startpoint(pos, chromosome);
         if (current_clique.size() > best_clique.size()) {
             best_clique = current_clique;
-        }
-
-        lock_guard<mutex> lock(mtx);
-        if (best_clique.size() > max_clique.size()) {
-            max_size = best_clique.size();
-            max_clique = best_clique;
         }
     }
 
