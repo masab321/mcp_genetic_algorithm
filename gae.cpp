@@ -17,7 +17,7 @@ using namespace std;
 mutex mtx; 
 
 // knobs
-int pop_size = 50;
+int pop_size = 76;
 int regen_population_limit = 20;
 int generations = 200;
 int naive_restart_number = 399;
