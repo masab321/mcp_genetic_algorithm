@@ -12,6 +12,7 @@
 #include <future>
 #include <mutex>
 #include <thread>
+#include <cassert>
 
 using namespace std;
 mutex mtx; 
@@ -20,11 +21,8 @@ mutex mtx;
 int pop_size = 100;
 int regen_population_limit = 10;
 int generations = 200;
-int naive_restart_number = 399;
 int number_of_mutations = 1;
-int elite_n = 1;
 int tournament_size = 2;
-int max_recursion = 100;
 
 unsigned seed = 1500;
 default_random_engine e(seed);
@@ -37,7 +35,6 @@ vector<int> vertices;
 vector<vector<int>> population;
 vector<int> max_clique;
 int max_size = 0;
-default_random_engine generator(random_device{}());
 
 void read_dimacs_clique_file(const string& filename);
 void print_global_variables();
@@ -45,7 +42,7 @@ vector<int> random_permutation(int n);
 bool fitness_comparator(const vector<int>& a, const vector<int>& b);
 int assess_fitness(const vector<int>& chromosome);
 void expand_clique(vector<int>& vertices);
-int select_with_replacement();
+int tournament_selection();
 pair<vector<int>, vector<int>> pmx_crossover(const vector<int>& parent_a, const vector<int>& parent_b);
 void mutate(vector<int>& chromosome);
 void run_genetic_algorithm();
@@ -65,7 +62,7 @@ int main(int argc, char* argv[]) {
     srand(seed);
     file_name = argv[1];
     read_dimacs_clique_file(file_name);
-    // print_global_variables();
+    
     run_genetic_algorithm();
 
     cout << "Clique result for file: " << file_name << endl;
@@ -75,6 +72,7 @@ int main(int argc, char* argv[]) {
         cout << v << " ";
     }
     cout << endl;
+
     return 0;
 }
 
@@ -131,12 +129,10 @@ void print_population_with_fitness(const vector<vector<int>>& population) {
     cout << "Chromosome\tFitness\n";
     cout << "------------------------\n";
     
-    // Iterate over each chromosome in the population
     for (size_t i = 0; i < population.size(); ++i) {
         const vector<int>& chromosome = population[i];
         int fitness = assess_fitness(chromosome);
-        
-        // Print the chromosome and its fitness value
+
         cout << "[";
         for (size_t j = 0; j < chromosome.size(); ++j) {
             cout << chromosome[j];
@@ -162,49 +158,60 @@ void update_max() {
     }
 }
 
-void run_genetic_algorithm() {
-    population.resize(pop_size, vector<int>(N));
-    vector<vector<int>> new_population; new_population.reserve(N);
+void initialize_population() {
     for (int i = 0; i < pop_size; i++) {
         population[i] = random_permutation(N);
     }
+}
+
+void fitness_assessment_population() {
+    vector<thread> threads;
+    for (int i = 0; i < pop_size; i++) {
+        threads.emplace_back(expand_clique, ref(population[i]));
+        // expand_clique(population[i])
+    }
+    for (auto &th: threads) {
+        th.join();
+    }
+    update_max();
+}
+
+void print_current_state_of_population(const int& gen, const int& max_clique_repeated) {
+    int total_fitness = 0;
+    for (int pop = 0; pop < pop_size; pop++) total_fitness += assess_fitness(population[pop]);
+    cout << "Generation: " << gen << ". Average fitness: " << total_fitness / pop_size << " Max size: " << max_size << ", Max repeated: "<< max_clique_repeated << endl;
+        
+}
+
+void run_genetic_algorithm() {
+    population.resize(pop_size, vector<int>(N));
+    vector<vector<int>> new_population; new_population.reserve(N);
+    
+    initialize_population();
+
     int max_clique_repeated = 0;
     int prev_max = max_size;
-
     for (int gen = 0; gen < generations; gen++) {
         if (max_size == prev_max) {
             max_clique_repeated++;
             if (max_clique_repeated == regen_population_limit) {
                 cout << "Regenerating population" << endl;
-                for (int i = 0; i < pop_size; i++) {
-                    population[i] = random_permutation(N);
-                }
+                initialize_population();
                 max_clique_repeated = 0;
             }
         } else {
-            max_clique_repeated = 0;
+            max_clique_repeated = 1;
             prev_max = max_size;
         }
 
-        // Fitness Assessment
-        vector<thread> threads;
-        for (int i = 0; i < pop_size; i++) {
-            threads.emplace_back(expand_clique, ref(population[i]));
-            // expand_clique(population[i])
-        }
-        for (auto &th: threads) {
-            th.join();
-        }
-        update_max();
+        fitness_assessment_population();
+        print_current_state_of_population(gen, max_clique_repeated);
 
-        int total_fitness = 0;
-        for (int pop = 0; pop < pop_size; pop++) total_fitness += assess_fitness(population[pop]);
-        cout << "Generation: " << gen << ". Average fitness: " << total_fitness / pop_size << " Max size: " << max_size << ", Max repeated: "<< max_clique_repeated << endl;
-        
         new_population.clear();
+        assert(pop_size % 2 == 0);
         for (int pop = 0; pop < population.size() / 2; pop++) {
-            auto& parent_a = population[select_with_replacement()];
-            auto& parent_b = population[select_with_replacement()];
+            auto& parent_a = population[tournament_selection()];
+            auto& parent_b = population[tournament_selection()];
             auto [child_a, child_b] = pmx_crossover(parent_a, parent_b);
             mutate(child_a);
             mutate(child_b);
@@ -224,11 +231,11 @@ vector<int> random_permutation(int n) {
     return permutation;
 }
 
-int select_with_replacement() {
+int tournament_selection() {
     int best_index = random_number(0, pop_size - 1);
     int best_fitness = assess_fitness(population[best_index]);
 
-    for (int i = 1; i < tournament_size; ++i) {
+    for (int i = 1; i < tournament_size; i++) {
         int next_index = random_number(0, pop_size - 1);
         int next_fitness = assess_fitness(population[next_index]);
 
@@ -238,10 +245,6 @@ int select_with_replacement() {
         }
     }
     return best_index;
-}
-
-bool fitness_comparator(const vector<int>& a, const vector<int>& b) {
-    return assess_fitness(a) > assess_fitness(b);
 }
 
 int assess_fitness(const vector<int>& chromosome) {
@@ -318,22 +321,12 @@ void mutate(vector<int>& chromosome) {
     for (int i = 0; i < number_of_mutations; ++i) {
         int index_a = random_number(0, f);
         int index_b = random_number(f + 1, N - 1);
-        // reverse(chromosome.begin() + index_a, chromosome.begin() + index_b);
         swap(chromosome[index_a], chromosome[index_b]);
     }
 }
 
 int random_number(int min, int max) {
     return min + rand() % (max - min + 1);
-}
-
-bool has_duplicate(const vector<int>& chromosome) {
-    vector<bool> freq(N, 0);
-    for (int i: chromosome) {
-        if (freq[i] == 1) return true;
-        freq[i] = true;
-    }
-    return false;
 }
 
 vector<int> find_clique_right(int start_point, const vector<int>& chromosome) {
@@ -404,4 +397,3 @@ vector<int> naive_clique(vector<int>& chromosome) {
 
     return best_clique;
 }
-
