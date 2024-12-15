@@ -12,18 +12,20 @@
 #include <future>
 #include <mutex>
 #include <thread>
+#include <queue>
+#include <list>
 
 using namespace std;
 mutex mtx; 
 
 // knobs
 int pop_size = 100;
-int regen_population_limit = 10;
+int regen_population_limit = 30;
 int generations = 200;
 int naive_restart_number = 399;
-int number_of_mutations = 1;
+int number_of_mutations = 3;
 int elite_n = 1;
-int tournament_size = 2;
+int tournament_size = 5;
 int max_recursion = 100;
 
 unsigned seed = 1500;
@@ -53,6 +55,7 @@ int random_number(int min, int max);
 bool has_duplicate(const vector<int>& chromosome);
 vector<int> naive_clique(vector<int>& chromosome);
 
+void quadratic_greedy_clique(vector<int> &chromosome);
 vector<int> complete_search_driver(const vector<int>& chromosome);
 void complete_search(vector<int> candidate_vertices, vector<int> clique, vector<int>& best_clique, int& recursion);
 
@@ -189,7 +192,7 @@ void run_genetic_algorithm() {
         // Fitness Assessment
         vector<thread> threads;
         for (int i = 0; i < pop_size; i++) {
-            threads.emplace_back(expand_clique, ref(population[i]));
+            threads.emplace_back(quadratic_greedy_clique, ref(population[i]));
             // expand_clique(population[i])
         }
         for (auto &th: threads) {
@@ -245,6 +248,24 @@ bool fitness_comparator(const vector<int>& a, const vector<int>& b) {
 }
 
 int assess_fitness(const vector<int>& chromosome) {
+    int best = 1;
+    vector<int> dp(N, 0); for (int i = 0; i < N; i++) dp[i] = i;
+    for (int i = 1; i < N; i++) {
+        int cur = 1;
+        int j_limit = dp[i - 1];
+        for (int j = i - 1; j >= j_limit; j--) {
+            if (G[chromosome[i]][chromosome[j]]) {
+                cur++;
+                j_limit = max(j_limit, dp[j]);
+            } else {
+                break;
+            }
+        }
+        best = max(cur, best);
+        dp[i] = i - cur + 1;
+    }
+    return best;
+
     int clq_size = 0;
     for (int i = 1; i < N; i++) {
         bool all_connected = true;
@@ -404,4 +425,125 @@ vector<int> naive_clique(vector<int>& chromosome) {
 
     return best_clique;
 }
+
+void quadratic_greedy_clique(vector<int> &chromosome) {
+    vector<int> best;
+    deque<int> clique;
+    vector<int> result_chromosome;
+    list<pair<int, set<int>>> dis_candidate;
+    list<pair<int, set<int>>> dis_extra;
+
+    for (int i: chromosome) dis_candidate.push_back({i, set<int>()});
+
+    for (int i = 0; i < N; i++) {
+        bool all_connected = 1;
+        for (int j: clique) {
+            if (G[chromosome[i]][j] == false) {
+                all_connected = false;
+                break;
+            }
+        }
+
+        if (all_connected) {
+            clique.push_back(chromosome[i]);
+            best.push_back(chromosome[i]);
+            result_chromosome.push_back(chromosome[i]);
+
+            for (auto it = dis_candidate.begin(); it != dis_candidate.end(); ) {
+                if (it->first == chromosome[i]) {
+                    it = dis_candidate.erase(it);
+                }
+                else {
+                    if (G[chromosome[i]][it->first] == false) {
+                        it->second.insert(chromosome[i]);
+                    }
+                    it++;
+                }
+            }
+        }
+    }
+
+    while(dis_candidate.size()) {
+        vector<int> can_be_added;
+        while (can_be_added.empty()) {
+            int vertex = clique.front();
+            clique.pop_front();
+            for (auto it = dis_candidate.begin(); it != dis_candidate.end(); it++) {
+                it->second.erase(vertex);
+                if (it->second.empty()) {
+                    can_be_added.push_back(it->first);
+                }
+            }
+
+            for (auto it = dis_extra.begin(); it != dis_extra.end(); it++) {
+                it->second.erase(vertex); 
+            }
+            dis_extra.push_back({vertex, set<int>()});
+        }
+
+        for (int c: can_be_added) {
+            bool is_empty = 0;
+            for (auto it = dis_candidate.begin(); it != dis_candidate.end(); it++) {
+                if (it->first == c and it->second.size() > 0) {
+                    is_empty = 1;
+                    break;
+                }
+            }
+
+            if (is_empty) continue;
+            clique.push_back(c);
+            result_chromosome.push_back(c);
+            for (auto it = dis_candidate.begin(); it != dis_candidate.end(); it++) {
+                if (G[it->first][c] == false and it->first != c) {
+                    it->second.insert(c);
+                }
+            }
+            for (auto it = dis_extra.begin(); it != dis_extra.end(); it++) {
+                if (G[it->first][c] == false) {
+                    it->second.insert(c);
+                }
+            }
+        }
+
+        for (auto it = dis_candidate.begin(); it != dis_candidate.end(); ) {
+            if (it->second.empty()) {
+                it = dis_candidate.erase(it);
+            }
+            else {
+                it++;
+            }
+        }
+
+        for (auto it = dis_extra.begin(); it != dis_extra.end();) {
+            if (it->second.empty()) {
+                clique.push_back(it->first);
+                for (auto dc = dis_candidate.begin(); dc != dis_candidate.end(); dc++) {
+                    if (G[dc->first][it->first] == false){
+                        dc->second.insert(it->first);
+                    }
+                }
+
+                for (auto de = dis_extra.begin(); de != dis_extra.end(); de++) {
+                    if (G[de->first][it->first] == false and it->first != de->first){
+                        de->second.insert(it->first);
+                    }
+                }
+
+                it = dis_extra.erase(it);
+            }
+            else {
+                it++;
+            }
+        }
+
+        if (clique.size() > best.size()) {
+            best.clear();
+            for (int i: clique) {
+                best.push_back(i);
+            }
+        }
+    }
+    chromosome = result_chromosome;
+}
+
 
