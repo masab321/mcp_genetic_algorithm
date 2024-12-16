@@ -13,21 +13,22 @@
 #include <mutex>
 #include <thread>
 #include <cassert>
+#include <list>
 
 using namespace std;
 mutex mtx; 
 
 // knobs
 int pop_size = 100;
-int regen_population_limit = 10;
+int regen_population_limit = 20;
 int generations = 200;
 int number_of_mutations = 1;
-int tournament_size = 2;
+int tournament_size = 3;
 
-unsigned seed = 1500;
+unsigned seed = 12000;
 default_random_engine e(seed);
 
-vector<vector<bool>> G;
+vector<vector<uint8_t>> G;
 string file_name;
 int N;
 vector<int> vertices;
@@ -91,7 +92,7 @@ void read_dimacs_clique_file(const string& filename) {
             stringstream ss(line);
             string tmp;
             ss >> tmp >> tmp >> N;
-            G.resize(N, vector<bool>(N, false));
+            G.resize(N, vector<uint8_t>(N, 0));
             vertices.resize(N);
             iota(vertices.begin(), vertices.end(), 0);
         } else if (line[0] == 'e') {
@@ -180,7 +181,6 @@ void print_current_state_of_population(const int& gen, const int& max_clique_rep
     int total_fitness = 0;
     for (int pop = 0; pop < pop_size; pop++) total_fitness += assess_fitness(population[pop]);
     cout << "Generation: " << gen << ". Average fitness: " << total_fitness / pop_size << " Max size: " << max_size << ", Max repeated: "<< max_clique_repeated << endl;
-        
 }
 
 void run_genetic_algorithm() {
@@ -316,7 +316,7 @@ pair<vector<int>, vector<int>> pmx_crossover(const vector<int>& parent_a, const 
 }
 
 void mutate(vector<int>& chromosome) {
-    int f = assess_fitness(chromosome);
+    int f = N / 2;
 
     for (int i = 0; i < number_of_mutations; ++i) {
         int index_a = random_number(0, f);
@@ -329,65 +329,48 @@ int random_number(int min, int max) {
     return min + rand() % (max - min + 1);
 }
 
-vector<int> find_clique_right(int start_point, const vector<int>& chromosome) {
-    vector<int> current_clique;
-    unordered_set candidate_vertices(chromosome.begin(), chromosome.end());
-
+vector<int> find_circular_clique(int start_point, const vector<int>& chromosome, bool left) {
+    vector<int> current_clique; current_clique.reserve(N);
+    list<int> candidate_vertices;
     for (int i = 0; i < N; i++) {
-        int index = (start_point + i) % N;
-        if (candidate_vertices.find(chromosome[index]) != candidate_vertices.end()) {
-            current_clique.push_back(chromosome[index]);
-            candidate_vertices.erase(chromosome[index]);
-            for (auto it = candidate_vertices.begin(); it != candidate_vertices.end(); ) {
-                int v = *it;
-                if (!G[chromosome[index]][v]) {
-                    it = candidate_vertices.erase(it);
-                } else {
-                    ++it;
-                }
+        int index = -1;
+        if (!left) {
+            index = (start_point - i + N) % N;
+        } else {
+            index = (start_point + i) % N;
+        }
+        candidate_vertices.push_back(chromosome[index]);
+    }
+
+    while(candidate_vertices.size()) {
+        auto v_it = candidate_vertices.begin();
+        int v = *v_it;
+        current_clique.push_back(v);
+        candidate_vertices.erase(v_it);
+
+        auto c_end = candidate_vertices.end();
+        for (auto it = candidate_vertices.begin(); it != c_end; ) {
+            if (!G[v][*it]) {
+                it = candidate_vertices.erase(it);
+            } else {
+                ++it;
             }
         }
-    }
-    
-    return current_clique;
-}
 
-vector<int> find_clique_left(int start_point, const vector<int>& chromosome) {
-    vector<int> current_clique;
-    unordered_set candidate_vertices(chromosome.begin(), chromosome.end());
-
-    for (int i = 0; i < N; i++) {
-        int index = (start_point - i + N) % N;
-        if (candidate_vertices.find(chromosome[index]) != candidate_vertices.end()) {
-            current_clique.push_back(chromosome[index]);
-            candidate_vertices.erase(chromosome[index]);
-            for (auto it = candidate_vertices.begin(); it != candidate_vertices.end(); ) {
-                int v = *it;
-                if (!G[chromosome[index]][v]) {
-                    it = candidate_vertices.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
     }
-    
     return current_clique;
 }
 
 vector<int> find_clique_for_startpoint(int start_point, const vector<int>& chromosome) {
-    vector<int> left_best = find_clique_left(start_point, chromosome);
-    vector<int> right_best = find_clique_right(start_point, chromosome);
+    vector<int> left_best = find_circular_clique(start_point, chromosome, 1);
+    vector<int> right_best = find_circular_clique(start_point, chromosome, 0);
 
     if (left_best.size() > right_best.size()) return left_best;
     return right_best;
 }
 
 vector<int> naive_clique(vector<int>& chromosome) {
-    int restart_number = N - 1;
     vector<int> best_clique;
-    best_clique.reserve(N);
-
     for (int pos = 0; pos < N; pos++) {
         vector<int> current_clique = find_clique_for_startpoint(pos, chromosome);
         if (current_clique.size() > best_clique.size()) {
