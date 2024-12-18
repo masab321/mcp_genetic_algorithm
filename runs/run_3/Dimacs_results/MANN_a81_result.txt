@@ -1,0 +1,2 @@
+Generation: 0. Average fitness: 1086 Max size: 1090, Max repeated: 1
+Generation: 1. Average fitness: 1088 Max size: 1092, Max repeated: 1

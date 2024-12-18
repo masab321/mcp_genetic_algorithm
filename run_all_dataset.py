@@ -2,8 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
-input_dir = "DIMACS_cliques"
-output_dir = "Dimacs_results"
+input_dir = "datasets/bhoslib_cliques"
+output_dir = "bhoslib_results"
 
 Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -13,10 +13,10 @@ def run_program(input_file):
     try:
         # Run the program with a timeout of 2 hours (7200 seconds)
         result = subprocess.run(
-            ["./gae", input_file], 
+            [".\\gae.exe", input_file], 
             stdout=open(output_file, "w"), 
             stderr=subprocess.STDOUT, 
-            timeout=3600  # 2 hours
+            timeout=3600  # 1 hour
         )
         print(f"Completed {input_file}")
     except subprocess.TimeoutExpired:
@@ -25,7 +25,7 @@ def run_program(input_file):
         print(f"Error running {input_file}: {e}")
 
 # Compile the C++ program
-subprocess.run(["g++", "gae.cpp", "-o", "gae"])
+subprocess.run(["g++", "gae.cpp", "-o", "gae.exe"])
 
 # Get the list of .clq files in the input directory
 clq_files = [os.path.join(input_dir, file) for file in os.listdir(input_dir) if file.endswith(".clq")]
@@ -33,9 +33,9 @@ clq_files = [os.path.join(input_dir, file) for file in os.listdir(input_dir) if 
 # Run the program for each .clq file sequentially
 resume = 0
 for input_file in clq_files:
-    if input_file.endswith("MANN_a45.clq"):
-        resume = 1
-    if resume == 0:
-        continue
+    # if input_file.endswith("MANN_a45.clq"):
+    #     resume = 1
+    # if resume == 0:
+    #     continue
     print(input_file + " started.")
     run_program(input_file)
