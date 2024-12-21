@@ -20,7 +20,7 @@ mutex mtx;
 
 // knobs
 int pop_size = 100;
-int regen_population_limit = 20;
+int regen_population_limit = 10;
 int generations = 200;
 int number_of_mutations = 1;
 int tournament_size = 3;
@@ -36,6 +36,7 @@ vector<int> vertices;
 vector<vector<int>> population;
 vector<int> max_clique;
 int max_size = 0;
+int gen_max = 0;
 
 void read_dimacs_clique_file(const string& filename);
 void print_global_variables();
@@ -156,6 +157,9 @@ void update_max() {
                 max_clique.push_back(population[i][j]);
             }
         }
+        if (cur_fitness > gen_max) {
+            gen_max = cur_fitness;
+        }
     }
 }
 
@@ -180,7 +184,7 @@ void fitness_assessment_population() {
 void print_current_state_of_population(const int& gen, const int& max_clique_repeated) {
     int total_fitness = 0;
     for (int pop = 0; pop < pop_size; pop++) total_fitness += assess_fitness(population[pop]);
-    cout << "Generation: " << gen << ". Average fitness: " << total_fitness / pop_size << " Max size: " << max_size << ", Max repeated: "<< max_clique_repeated << endl;
+    cout << "Gen: " << gen << ". Avg: " << total_fitness / pop_size << ", Gen Max: " << gen_max << ", Max: " << max_size << ", Gen. Max Repeated: "<< max_clique_repeated << endl;
 }
 
 void run_genetic_algorithm() {
@@ -190,18 +194,19 @@ void run_genetic_algorithm() {
     initialize_population();
 
     int max_clique_repeated = 0;
-    int prev_max = max_size;
+    int prev_max = gen_max;
     for (int gen = 0; gen < generations; gen++) {
-        if (max_size == prev_max) {
+        if (gen_max == prev_max) {
             max_clique_repeated++;
             if (max_clique_repeated == regen_population_limit) {
                 cout << "Regenerating population" << endl;
                 initialize_population();
-                max_clique_repeated = 0;
+                max_clique_repeated = 1;
+                gen_max = 0;
             }
         } else {
             max_clique_repeated = 1;
-            prev_max = max_size;
+            prev_max = gen_max;
         }
 
         fitness_assessment_population();
@@ -345,8 +350,8 @@ vector<int> find_circular_clique(int start_point, const vector<int>& chromosome,
     while(candidate_vertices.size()) {
         auto v_it = candidate_vertices.begin();
         int v = *v_it;
-        int random_prob = random_number(1, N);
-        if (random_prob <= 1) {
+        int random_prob = random_number(1, 1000);
+        if (random_prob <= 7) {
             // cout << "random skip hit" << endl;
             candidate_vertices.erase(v_it);
             candidate_vertices.push_back(v);
