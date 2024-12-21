@@ -34,7 +34,7 @@ def parse_file_lines(file_path):
     return best, generation
 
 def get_result(dataset_name):
-    file_path = get_file_path("./Dimacs_results/", f"{dataset_name}_result.txt")
+    file_path = get_file_path("./dimacs_results/", f"{dataset_name}_result.txt")
     if file_path:
         return parse_file_lines(file_path)
     return [-1, -1]

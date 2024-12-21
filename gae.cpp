@@ -345,6 +345,13 @@ vector<int> find_circular_clique(int start_point, const vector<int>& chromosome,
     while(candidate_vertices.size()) {
         auto v_it = candidate_vertices.begin();
         int v = *v_it;
+        int random_prob = random_number(1, N);
+        if (random_prob <= 1) {
+            // cout << "random skip hit" << endl;
+            candidate_vertices.erase(v_it);
+            candidate_vertices.push_back(v);
+            continue;
+        }
         current_clique.push_back(v);
         candidate_vertices.erase(v_it);
 

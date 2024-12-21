@@ -2,8 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
-input_dir = "datasets/bhoslib_cliques"
-output_dir = "bhoslib_results"
+input_dir = "datasets/dimacs_cliques"
+output_dir = "dimacs_results"
 
 Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -27,12 +27,22 @@ def run_program(input_file):
 # Compile the C++ program
 subprocess.run(["g++", "gae.cpp", "-o", "gae.exe"])
 
-# Get the list of .clq files in the input directory
 clq_files = [os.path.join(input_dir, file) for file in os.listdir(input_dir) if file.endswith(".clq")]
+left_dimacs_files = [
+    "DSJC500_5.clq",
+    "DSJC1000_5.clq",
+    "gen200_p0.9_44.clq",
+    "gen200_p0.9_55.clq",
+    "gen400_p0.9_55.clq",
+    "gen400_p0.9_65.clq",
+    "gen400_p0.9_75.clq"
+]
 
-# Run the program for each .clq file sequentially
+
 resume = 0
 for input_file in clq_files:
+    if os.path.basename(input_file) not in left_dimacs_files:
+        continue
     # if input_file.endswith("MANN_a45.clq"):
     #     resume = 1
     # if resume == 0:
