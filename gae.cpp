@@ -20,10 +20,10 @@ mutex mtx;
 
 // knobs
 int pop_size = 100;
-int regen_population_limit = 10;
+int regen_population_limit = 20;
 int generations = 200;
 int number_of_mutations = 1;
-int tournament_size = 3;
+int tournament_size = 2;
 
 unsigned seed = 12000;
 default_random_engine e(seed);
@@ -173,7 +173,6 @@ void fitness_assessment_population() {
     vector<thread> threads;
     for (int i = 0; i < pop_size; i++) {
         threads.emplace_back(expand_clique, ref(population[i]));
-        // expand_clique(population[i])
     }
     for (auto &th: threads) {
         th.join();
@@ -217,6 +216,10 @@ void run_genetic_algorithm() {
         for (int pop = 0; pop < population.size() / 2; pop++) {
             auto& parent_a = population[tournament_selection()];
             auto& parent_b = population[tournament_selection()];
+            int random_child_prob = random_number(1, 100);
+            if (random_child_prob <= 3) {
+                parent_b = random_permutation(N);
+            }
             auto [child_a, child_b] = pmx_crossover(parent_a, parent_b);
             mutate(child_a);
             mutate(child_b);
@@ -350,13 +353,6 @@ vector<int> find_circular_clique(int start_point, const vector<int>& chromosome,
     while(candidate_vertices.size()) {
         auto v_it = candidate_vertices.begin();
         int v = *v_it;
-        int random_prob = random_number(1, 1000);
-        if (random_prob <= 7) {
-            // cout << "random skip hit" << endl;
-            candidate_vertices.erase(v_it);
-            candidate_vertices.push_back(v);
-            continue;
-        }
         current_clique.push_back(v);
         candidate_vertices.erase(v_it);
 
