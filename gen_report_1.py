@@ -5,7 +5,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
 def parse_max_size(text):
-    parts = text.split("Max size:")
+    parts = text.split(", Max:")
     if len(parts) > 1:
         max_size_part = parts[1].split(",")[0].strip()
         return int(max_size_part)
@@ -29,7 +29,7 @@ def parse_file_lines(file_path):
                 if cur_max is not None and cur_max > best:
                     best = cur_max
                     generation = lc
-            if "Generation" in line:
+            if "Gen:" in line:
                 lc += 1
     return best, generation
 
