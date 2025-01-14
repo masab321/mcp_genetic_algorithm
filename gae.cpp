@@ -21,7 +21,7 @@ mutex mtx;
 // knobs
 int pop_size = 100;
 int regen_population_limit = 20;
-int generations = 200;
+int generations = 400;
 int number_of_mutations = 1;
 int tournament_size = 2;
 
@@ -217,7 +217,10 @@ void run_genetic_algorithm() {
             auto& parent_a = population[tournament_selection()];
             auto& parent_b = population[tournament_selection()];
             int random_child_prob = random_number(1, 100);
-            if (random_child_prob <= 3) {
+            if (random_child_prob <= 4) {
+                if (assess_fitness(parent_a) > assess_fitness(parent_b)) {
+                    parent_a = parent_b;
+                }
                 parent_b = random_permutation(N);
             }
             auto [child_a, child_b] = pmx_crossover(parent_a, parent_b);
