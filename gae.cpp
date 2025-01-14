@@ -272,7 +272,7 @@ void initialize_population() {
 void check_and_reinitialize_population(int &prev_max, int &gen_max_repeated) {
     if (gen_max == prev_max) {
         gen_max_repeated++;
-        if (gen_max_repeated == regen_population_limit) {
+        if (gen_max_repeated == regen_population_limit + 1) {
             cout << "Regenerating population" << endl;
             initialize_population();
             gen_max_repeated = 1;
@@ -311,7 +311,7 @@ void run_genetic_algorithm() {
 
     int gen_max_repeated = 0;
     int prev_max = gen_max;
-    for (int gen = 0; gen < generations; gen++) {
+    for (int gen = 1; gen <= generations; gen++) {
         expand_clique_and_fitness_assessment();
         print_current_state_of_population(gen, gen_max_repeated);
 
