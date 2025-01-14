@@ -102,10 +102,10 @@ void print_population_with_fitness(const vector<vector<int>>& population) {
 }
 
 
-void print_current_state_of_population(const int& gen, const int& max_clique_repeated) {
+void print_current_state_of_population(const int& gen, const int& gen_max_repeated) {
     int total_fitness = 0;
     for (int pop = 0; pop < pop_size; pop++) total_fitness += assess_fitness(population[pop]);
-    cout << "Gen: " << gen << ". Avg: " << total_fitness / pop_size << ", Gen Max: " << gen_max << ", Max: " << max_size << ", Gen. Max Repeated: "<< max_clique_repeated << endl;
+    cout << "Gen: " << gen << ". Avg: " << total_fitness / pop_size << ", Gen Max: " << gen_max << ", Max: " << max_size << ", Gen. Max Repeated: "<< gen_max_repeated << endl;
 }
 #pragma endregion
 
@@ -269,46 +269,60 @@ void initialize_population() {
     }
 }
 
+void check_and_reinitialize_population(int &prev_max, int &gen_max_repeated) {
+    if (gen_max == prev_max) {
+        gen_max_repeated++;
+        if (gen_max_repeated == regen_population_limit) {
+            cout << "Regenerating population" << endl;
+            initialize_population();
+            gen_max_repeated = 1;
+            gen_max = 0;
+        }
+    } else {
+        gen_max_repeated = 1;
+        prev_max = gen_max;
+    }
+}
+
+pair<vector<int>, vector<int>> crossover() {
+    auto& parent_a = population[tournament_selection()];
+    auto& parent_b = population[tournament_selection()];
+    int random_child_prob = random_number(1, 100);
+    if (random_child_prob <= 4) {
+        if (assess_fitness(parent_a) > assess_fitness(parent_b)) { // this is supposed to be the opposite. Fix it in the implementation of Adaptive variation.
+            parent_a = parent_b;
+        }
+        parent_b = random_permutation(N);
+    }
+    auto children = pmx_crossover(parent_a, parent_b);
+    return children;
+}
+
+void mutation(vector<int> &child_a, vector<int> &child_b) {
+    mutate(child_a);
+    mutate(child_b);
+}
+
 void run_genetic_algorithm() {
     population.resize(pop_size, vector<int>(N));
     vector<vector<int>> new_population; new_population.reserve(N);
     
     initialize_population();
 
-    int max_clique_repeated = 0;
+    int gen_max_repeated = 0;
     int prev_max = gen_max;
     for (int gen = 0; gen < generations; gen++) {
-        if (gen_max == prev_max) {
-            max_clique_repeated++;
-            if (max_clique_repeated == regen_population_limit) {
-                cout << "Regenerating population" << endl;
-                initialize_population();
-                max_clique_repeated = 1;
-                gen_max = 0;
-            }
-        } else {
-            max_clique_repeated = 1;
-            prev_max = gen_max;
-        }
-
         expand_clique_and_fitness_assessment();
-        print_current_state_of_population(gen, max_clique_repeated);
+        print_current_state_of_population(gen, gen_max_repeated);
+
+        check_and_reinitialize_population(prev_max, gen_max_repeated);
 
         new_population.clear();
         assert(pop_size % 2 == 0);
         for (int pop = 0; pop < population.size() / 2; pop++) {
-            auto& parent_a = population[tournament_selection()];
-            auto& parent_b = population[tournament_selection()];
-            int random_child_prob = random_number(1, 100);
-            if (random_child_prob <= 4) {
-                if (assess_fitness(parent_a) > assess_fitness(parent_b)) { // this is supposed to be the opposite. Fix it in the implementation of Adaptive variation.
-                    parent_a = parent_b;
-                }
-                parent_b = random_permutation(N);
-            }
-            auto [child_a, child_b] = pmx_crossover(parent_a, parent_b);
-            mutate(child_a);
-            mutate(child_b);
+            auto [child_a, child_b] = crossover();
+            mutation(child_a, child_b);
+            
             new_population.push_back(child_a);
             if (new_population.size() < pop_size) {
                 new_population.push_back(child_b);
