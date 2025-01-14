@@ -8,19 +8,15 @@ output_dir = "dimacs_results"
 
 Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-def run_program(input_file):
+def run_program(input_file, time_limit_seconds):
     output_file = os.path.join(output_dir, f"{Path(input_file).stem}_result.txt")
     
     try:
-        # Run the program with a timeout of 2 hours (7200 seconds)
         result = subprocess.run(
-            [".\\gae.exe", input_file], 
+            [".\\gae.exe", input_file, str(time_limit_seconds)], 
             stdout=open(output_file, "w"), 
-            stderr=subprocess.STDOUT, 
-            timeout=3600  # 1 hour
+            stderr=subprocess.STDOUT
         )
-    except subprocess.TimeoutExpired:
-        print(f"Timeout expired for {input_file}. The program took too long.")
     except Exception as e:
         print(f"Error running {input_file}: {e}")
 
@@ -42,6 +38,7 @@ left_dimacs_files = [
 resume = 0
 index = 1
 total = len(clq_files)
+time_limit = 10800
 for input_file in clq_files:
     index = index + 1
     # if os.path.basename(input_file) not in left_dimacs_files:
@@ -53,7 +50,7 @@ for input_file in clq_files:
     start_time = time.perf_counter()
     print(f"+ {index}/{total} - Started:" + input_file)
 
-    run_program(input_file)
+    run_program(input_file, time_limit)
 
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
