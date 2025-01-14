@@ -1,6 +1,7 @@
 #include <list>
 #include <vector>
 #include <random>
+#include <chrono>
 #include <thread>
 #include <fstream>
 #include <sstream>
@@ -24,7 +25,9 @@ default_random_engine e(seed);
 int N;
 string file_name;
 vector<int> vertices;
+int max_execution_time;
 vector<vector<uint8_t>> G;
+chrono::time_point<chrono::steady_clock> start_time;
 
 int gen_max = 0;
 int max_size = 0;
@@ -315,6 +318,13 @@ void run_genetic_algorithm() {
         expand_clique_and_fitness_assessment();
         print_current_state_of_population(gen, gen_max_repeated);
 
+        auto elapsed_time = chrono::duration_cast<chrono::seconds>(
+            chrono::steady_clock::now() - start_time
+        ).count();
+        if (elapsed_time > max_execution_time) {
+            break;
+        }
+
         check_and_reinitialize_population(prev_max, gen_max_repeated);
 
         new_population.clear();
@@ -363,11 +373,14 @@ void read_dimacs_clique_file(const string& filename) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " <DIMACS file>" << endl;
+    if (argc < 3) {
+        cerr << "Usage: " << argv[0] << " <DIMACS file>" <<" <Time limit in seconds (3200)>" << endl;
         return 1;
     }
     
+    max_execution_time = stoi(argv[2]);
+    start_time = chrono::steady_clock::now();
+
     srand(seed);
     file_name = argv[1];
     read_dimacs_clique_file(file_name);
