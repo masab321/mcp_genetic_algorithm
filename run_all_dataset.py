@@ -36,17 +36,18 @@ left_dimacs_files = [
 
 
 resume = 0
-index = 1
+index = 0
 total = len(clq_files)
 time_limit = 10800
 for input_file in clq_files:
     index = index + 1
     # if os.path.basename(input_file) not in left_dimacs_files:
     #     continue
-    if input_file.endswith("p_hat1000-1.clq"):
-        resume = 1
-    if resume == 0:
-        continue
+    # if input_file.endswith("p_hat1000-1.clq"):
+    #     resume = 1
+    # if resume == 0:
+    #     continue
+
     start_time = time.perf_counter()
     print(f"+ {index}/{total} - Started:" + input_file)
 
