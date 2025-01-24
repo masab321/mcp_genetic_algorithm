@@ -34,7 +34,7 @@ def parse_file_lines(file_path):
     return best, generation
 
 def get_result(dataset_name):
-    file_path = get_file_path("./run_5/dimacs_results/", f"{dataset_name}_result.txt")
+    file_path = get_file_path("./run_6/dimacs_results/", f"{dataset_name}_result.txt")
     if file_path:
         return parse_file_lines(file_path)
     return [-1, -1]
@@ -142,6 +142,6 @@ def gen_raw_report(input_file, text_output, word_output):
 
 if __name__ == "__main__":
     input_file = "../best_known/dimacs_best_known.txt"
-    text_output = "./run_5/dimacs_results.txt"
-    word_output = "./run_5/dimacs_results.docx"
+    text_output = "./run_6/dimacs_results.txt"
+    word_output = "./run_6/dimacs_results.docx"
     gen_raw_report(input_file, text_output, word_output)

@@ -292,7 +292,7 @@ pair<vector<int>, vector<int>> crossover() {
     auto& parent_b = population[tournament_selection()];
     int random_child_prob = random_number(1, 100);
     if (random_child_prob <= 2) {
-        if (assess_fitness(parent_a) < assess_fitness(parent_b)) {
+        if (assess_fitness(parent_a) < assess_fitness(parent_b)) { // this is supposed to be the opposite. Fix it in the implementation of Adaptive variation.
             parent_a = parent_b;
         }
         parent_b = random_permutation(N);
