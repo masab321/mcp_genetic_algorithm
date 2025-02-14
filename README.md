@@ -2,8 +2,20 @@
 
 Implementation of a parallel genetic algorithm for the maximum clique problem in C++. A clique in a graph is a subset of vertices in which each pair of vertices is connected by an edge. The maximum clique is the clique that contains the maximum number of vertices.The problem is NP-hard, and the computational complexity increases rapidly with the size of the graph.
 
-<b>The key idea:</b> <pre>_"With an optimal order of vertices, a greedy algorithm can solve the MCP in linear time"_</pre> The genetic algorithm is implemented as follows:
+<b>Usage:</b>
 <pre>
+- Compile the code using g++
+example: <b>$ g++ gae.cpp</b>
+- Run <b>./a.out filename generations</b>
+example: <b>$ ./a.out brock200_1.clq</b>
+example (Compile and Run): <b>$ g++ gae.cpp -o gae && ./gae brock400_1.clq</b>
+</pre><br>
+
+<b>The key idea:</b> <pre>_"With an optimal order of vertices, a greedy algorithm can solve the MCP in linear time"_</pre>
+
+The genetic algorithm is implemented as follows:
+<pre>
+   
 1. Initialization: Population of randomly generated permutation of vertices
 2. Selection: Tournament Selection
 3. Crossover: Two Point Crossover (Partially Mapped Crossover)
@@ -15,16 +27,8 @@ Implementation of a parallel genetic algorithm for the maximum clique problem in
 6. Fitness: From the begining of an individual greedily search for a clique
 7. If the max clique is repeated for a certain number of generations, then regenerate the population (step 1).
 </pre><br>
-<b>Usage:</b>
-<pre>
-- Compile the code using g++
-example: <b>$ g++ gae.cpp</b>
-- Run <b>./a.out filename generations</b>
-example: <b>$ ./a.out brock200_1.clq</b>
-example (Compile and Run): <b>$ g++ gae.cpp -o gae && ./gae brock400_1.clq</b>
-</pre><br>
 
-**Table:** Results of some DIMACS instances solved by the genetic algorithm. The maximum allotted runtime for each instance is 1 hour.
+**Table:** Results of some DIMACS instances solved by the genetic algorithm. The maximum allotted runtime for each instance is 1 hour. (table is from run2)
 | Instance           | Vertices           | Edges           | Best Known | Found           | Found at<br> Generation|
 |--------------------|--------------------|-----------------|------------|-----------------|---------------------|
 | brock200_1         | 200                | 14834           | 21         | 21              | 4                   |
@@ -104,12 +108,6 @@ example (Compile and Run): <b>$ g++ gae.cpp -o gae && ./gae brock400_1.clq</b>
 
 <b>TODO:</b>
 <pre>
-1. Refactor codes
-2. Duplicates:
-   1. Remove duplicates from the population.
-   2. Fill rest of the population using randomly generated permutations
-   3. Call expand_clique for newly added entries.
-3. Optimize the expand_clique function
-4. Experiment with heuristic approaches for the expand_clique function's clique search.
-5. Improve the runtime and result for the dense and large graphs.
+1. Implement CUDA based expand_clique
+2. Update the table for latest RUN
 </pre>
